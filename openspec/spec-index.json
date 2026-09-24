@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "project": "mihomo-studio",
+  "entrypoint": "openspec/project.md",
+  "roadmap": "openspec/roadmap.md",
+  "versionSources": [
+    "package.json",
+    "src-tauri/Cargo.toml",
+    "src-tauri/tauri.conf.json"
+  ],
+  "architecture": {
+    "tauriCompositionRoot": "src-tauri/src/lib.rs",
+    "expectedRustModules": [
+      "application",
+      "domain",
+      "infrastructure",
+      "interface"
+    ],
+    "expectedIpcCommands": [
+      "build_profile_draft",
+      "compile_strict_profile",
+      "convert_node_text",
+      "get_rule_catalog",
+      "inspect_node_text",
+      "inspect_subscription"
+    ]
+  },
+  "contracts": {
+    "compileProfileRequest": {
+      "frontendPath": "src/shared/contracts.ts",
+      "backendPath": "src-tauri/src/domain/compile/model.rs",
+      "fields": [
+        "mode",
+        "selectedRuleSourceIds",
+        "githubMirror",
+        "sources",
+        "bootstrapMappings"
+      ],
+      "secretBearingFields": [
+        "sources",
+        "bootstrapMappings"
+      ]
+    },
+    "convertNodeTextRequest": {
+      "frontendPath": "src/shared/contracts.ts",
+      "backendPath": "src-tauri/src/domain/compile/model.rs",
+      "fields": [
+        "content"
+      ],
+      "secretBearingFields": [
+        "content"
+      ]
+    },
+    "convertNodeTextResult": {
+      "frontendPath": "src/shared/contracts.ts",
+      "backendPath": "src-tauri/src/domain/compile/model.rs",
+      "fields": [
+        "yaml",
+        "templateYaml",
+        "templateFileName",
+        "nodeCount",
+        "duplicateNodeCount",
+        "compatibilityNormalizationCount",
+        "warnings"
+      ],
+      "secretBearingFields": [
+        "yaml",
+        "templateYaml"
+      ]
+    }
+  },
+  "catalog": {
+    "path": "src/data/rule-catalog.json",
+    "schemaVersion": 1,
+    "sourceCount": 10,
+    "ruleSetCount": 12,
+    "simpleDefaultSourceIds": [
+      "acl4ssr"
+    ],
+    "finalRuleSetId": "builtin.match",
+    "finalRuleOrder": 1000
+  },
+  "capabilities": [
+    {
+      "id": "system-architecture",
+      "status": "partial",
+      "specPath": "openspec/specs/system-architecture/spec.md",
+      "implementationPaths": [
+        "src-tauri/src/lib.rs",
+        "src-tauri/src/application",
+        "src-tauri/src/domain",
+        "src-tauri/src/infrastructure",
+        "src-tauri/src/interface",
+        "src/app",
+        "src/features",
+        "src/shared"
+      ],
+      "ipcCommands": [
+        "build_profile_draft",
+        "compile_strict_profile",
+        "convert_node_text",
+        "get_rule_catalog",
+        "inspect_node_text",
+        "inspect_subscription"
+      ]
+    },
+    {
+      "id": "source-ingestion",
+      "status": "partial",
+      "specPath": "openspec/specs/source-ingestion/spec.md",
+      "implementationPaths": [
+        "src-tauri/src/domain/source",
+        "src-tauri/src/application/source.rs",
+        "src-tauri/src/application/ports.rs",
+        "src-tauri/src/infrastructure/source",
+        "src-tauri/src/interface/ipc/source.rs",
+        "src-tauri/src/domain/compile/model.rs",
+        "src-tauri/src/domain/compile/node.rs",
+        "src-tauri/src/domain/compile/template.rs",
+        "src-tauri/src/domain/compile/templates/clash-single-node.yml",
+        "src-tauri/src/domain/compile/serializer.rs",
+        "src-tauri/src/application/compile.rs",
+        "src/features/node-converter",
+        "src/features/source-inspection",
+        "src/shared/api/studio.ts",
+        "src/shared/contracts.ts"
+      ],
+      "ipcCommands": [
+        "convert_node_text",
+        "inspect_node_text",
+        "inspect_subscription"
+      ]
+    },
+    {
+      "id": "rule-catalog",
+      "status": "partial",
+      "specPath": "openspec/specs/rule-catalog/spec.md",
+      "implementationPaths": [
+        "src/data/rule-catalog.json",
+        "src-tauri/src/domain/catalog",
+        "src-tauri/src/application/catalog.rs",
+        "src-tauri/src/infrastructure/catalog",
+        "src-tauri/src/interface/ipc/catalog.rs",
+        "src/features/profile-builder/model/catalog.ts",
+        "src/features/profile-builder/model/catalog.test.ts"
+      ],
+      "ipcCommands": [
+        "get_rule_catalog"
+      ]
+    },
+    {
+      "id": "profile-compilation",
+      "status": "partial",
+      "specPath": "openspec/specs/profile-compilation/spec.md",
+      "implementationPaths": [
+        "src-tauri/src/domain/profile",
+        "src-tauri/src/application/profile.rs",
+        "src-tauri/src/interface/ipc/profile.rs",
+        "src-tauri/src/domain/compile",
+        "src-tauri/src/application/compile.rs",
+        "src-tauri/src/interface/ipc/compile.rs",
+        "src/features/profile-builder",
+        "src/app/useStudioWorkspace.ts",
+        "src/shared/contracts.ts"
+      ],
+      "ipcCommands": [
+        "build_profile_draft",
+        "compile_strict_profile"
+      ]
+    },
+    {
+      "id": "desktop-experience",
+      "status": "partial",
+      "specPath": "openspec/specs/desktop-experience/spec.md",
+      "implementationPaths": [
+        "src/app/App.tsx",
+        "src/app/App.css",
+        "src/app/useStudioWorkspace.ts",
+        "src/features/node-converter",
+        "src/features/source-inspection",
+        "src/features/profile-builder",
+        "src/features/profile-preview",
+        "src/shared/api/studio.ts",
+        "src/shared/ui/BrandMark.tsx"
+      ],
+      "ipcCommands": [
+        "convert_node_text",
+        "compile_strict_profile"
+      ]
+    },
+    {
+      "id": "validation-export",
+      "status": "partial",
+      "specPath": "openspec/specs/validation-export/spec.md",
+      "implementationPaths": [
+        "src-tauri/src/domain/compile",
+        "src-tauri/src/application/compile.rs",
+        "src-tauri/src/interface/ipc/compile.rs",
+        "src-tauri/sidecars/mihomo-v1.19.29.json",
+        "scripts/validate-mihomo-fixture.sh",
+        "src/features/profile-preview/ui/PreviewPanel.tsx",
+        "src/shared/api/studio.ts",
+        "src/shared/contracts.ts"
+      ],
+      "ipcCommands": [
+        "compile_strict_profile"
+      ]
+    },
+    {
+      "id": "security-privacy",
+      "status": "partial",
+      "specPath": "openspec/specs/security-privacy/spec.md",
+      "implementationPaths": [
+        "src-tauri/src/domain/source/model.rs",
+        "src-tauri/src/domain/source/parser.rs",
+        "src-tauri/src/application/source.rs",
+        "src-tauri/src/infrastructure/source/reqwest_gateway.rs",
+        "src-tauri/src/interface/ipc/source.rs",
+        "src-tauri/src/domain/profile/model.rs",
+        "src-tauri/src/domain/profile/service.rs",
+        "src-tauri/src/domain/compile",
+        "src-tauri/src/application/compile.rs",
+        "src-tauri/src/interface/ipc/compile.rs",
+        "src/features/node-converter",
+        "src/shared/api/studio.ts",
+        "src/shared/contracts.ts",
+        "src/features/profile-preview/ui/PreviewPanel.tsx",
+        "src/app/useStudioWorkspace.ts"
+      ],
+      "ipcCommands": [
+        "convert_node_text",
+        "compile_strict_profile"
+      ]
+    },
+    {
+      "id": "spec-governance",
+      "status": "implemented",
+      "specPath": "openspec/specs/spec-governance/spec.md",
+      "implementationPaths": [
+        "AGENTS.md",
+        "openspec/project.md",
+        "openspec/spec-index.json",
+        "scripts/check-spec-drift.mjs",
+        "scripts/check-architecture.mjs"
+      ],
+      "ipcCommands": []
+    }
+  ]
+}

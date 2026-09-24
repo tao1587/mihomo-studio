@@ -1,0 +1,17 @@
+---
+proxies:
+  - name: WireGuard 1
+    type: wireguard
+    ip: 192.0.2.2/32
+    private-key: UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFA= # test-only placeholder: 32 P bytes
+    peers:
+      - server: wg-node.example.invalid
+        port: 51820
+        public-key: S0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0s= # test-only placeholder: 32 K bytes
+        allowed-ips:
+          - 0.0.0.0/0
+    udp: true
+    persistent-keepalive: 25
+    remote-dns-resolve: true
+    dns:
+      - 192.0.2.53

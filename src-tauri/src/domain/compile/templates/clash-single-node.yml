@@ -1,0 +1,247 @@
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+client-fingerprint: chrome
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# GEO 数据
+geodata-mode: true
+geodata-loader: memconservative
+geo-auto-update: true
+geo-update-interval: 24
+geox-url:
+  geoip: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+  mmdb: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb"
+  asn: "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb"
+
+# TUN：建议在 Clash Verge Rev 界面同时开启 TUN
+# mixed = TCP system + UDP gVisor，Mihomo 官方在无兼容问题时推荐 mixed
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+
+# 域名嗅探：帮助规则识别直接使用 IP / QUIC 的连接
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  override-destination: false
+  sniff:
+    HTTP:
+      ports:
+        - 80
+        - 8080-8880
+    TLS:
+      ports:
+        - 443
+        - 8443
+    QUIC:
+      ports:
+        - 443
+        - 8443
+
+# DNS：
+# - 国内域名 -> 国内 DoH，DIRECT 出口
+# - 国外域名 -> Cloudflare DoH，强制通过代理组发出
+# - fake-ip + TUN DNS 劫持，减少系统/应用绕过 Mihomo DNS 的机会
+# - IPv6 关闭，避免 IPv6 出口绕过 IPv4 代理
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  respect-rules: true
+  prefer-h3: false
+  use-hosts: true
+  use-system-hosts: false
+
+  # 只用于解析 DoH 服务器域名等基础 bootstrap；不会作为普通国外域名 DNS
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+
+  # 代理节点现在使用域名 lax1.lulala.fun。建立代理前必须先解析这个域名，
+# 因此 proxy-server-nameserver 走国内 DoH 直连；它只负责代理服务器域名解析，
+# 普通国外网站的 DNS 仍然由下方 Cloudflare DoH 经代理查询。
+  proxy-server-nameserver:
+    - "https://dns.alidns.com/dns-query#DIRECT"
+    - "https://doh.pub/dns-query#DIRECT"
+
+  # DIRECT 出口统一走国内 DoH
+  direct-nameserver:
+    - "https://dns.alidns.com/dns-query#DIRECT"
+    - "https://doh.pub/dns-query#DIRECT"
+  direct-nameserver-follow-policy: false
+
+  # 国内/中国大陆可用服务优先使用国内 DNS。
+  # Apple 全量域名使用国内 DNS 解析有利于命中国大陆 CDN，
+  # 但路由层仍只将 apple-cn 直连，避免把 Apple 国际服务全部误判为国内。
+  nameserver-policy:
+    "geosite:cn":
+      - "https://dns.alidns.com/dns-query#DIRECT"
+      - "https://doh.pub/dns-query#DIRECT"
+    "geosite:private":
+      - "https://dns.alidns.com/dns-query#DIRECT"
+      - "https://doh.pub/dns-query#DIRECT"
+    "geosite:apple":
+      - "https://dns.alidns.com/dns-query#DIRECT"
+      - "https://doh.pub/dns-query#DIRECT"
+    "geosite:microsoft@cn":
+      - "https://dns.alidns.com/dns-query#DIRECT"
+      - "https://doh.pub/dns-query#DIRECT"
+    "geosite:onedrive":
+      - "https://dns.alidns.com/dns-query#DIRECT"
+      - "https://doh.pub/dns-query#DIRECT"
+    "geosite:steam@cn":
+      - "https://dns.alidns.com/dns-query#DIRECT"
+      - "https://doh.pub/dns-query#DIRECT"
+    "geosite:category-games@cn":
+      - "https://dns.alidns.com/dns-query#DIRECT"
+      - "https://doh.pub/dns-query#DIRECT"
+    "+.lan":
+      - 223.5.5.5
+    "+.local":
+      - 223.5.5.5
+
+  # 默认国外 DNS：DoH 连接本身走代理，避免把国外目标域名交给本地 ISP DNS
+  nameserver:
+    - "https://1.1.1.1/dns-query#🚀 自动选择"
+    - "https://1.0.0.1/dns-query#🚀 自动选择"
+
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "localhost"
+    - "+.local"
+    - "+.lan"
+    - "time.*.com"
+    - "time.*.gov"
+    - "time.*.edu.cn"
+    - "time.*.apple.com"
+    - "time-ios.apple.com"
+
+proxies: []
+
+proxy-groups:
+  # 自动测速选择；目前只有一个节点，之后增加节点时把节点名追加进来即可
+  - name: "🚀 自动选择"
+    type: url-test
+    proxies:
+      - "__MIHOMO_STUDIO_NODE__"
+    url: "https://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    lazy: true
+
+  - name: "👆 手动选择"
+    type: select
+    proxies:
+      - "__MIHOMO_STUDIO_NODE__"
+      - "🚀 自动选择"
+
+  # 真正的 fallback 类型：节点失效时按顺序切换
+  # 当前只有一个节点，因此现阶段等同于单节点；后续可把备用节点继续追加进来
+  - name: "🐟 兜底"
+    type: fallback
+    proxies:
+      - "__MIHOMO_STUDIO_NODE__"
+    url: "https://www.gstatic.com/generate_204"
+    interval: 300
+    lazy: true
+
+  - name: "🤖 AI"
+    type: select
+    proxies:
+      - "🚀 自动选择"
+      - "👆 手动选择"
+      - "__MIHOMO_STUDIO_NODE__"
+
+  - name: "🎬 影视"
+    type: select
+    proxies:
+      - "🚀 自动选择"
+      - "👆 手动选择"
+      - "__MIHOMO_STUDIO_NODE__"
+
+  # 默认是 DIRECT；如果你临时要求“任何网站都不能看到真实公网 IP”，
+  # 可以在界面把此组切到“🚀 自动选择”。
+  - name: "🇨🇳 国内"
+    type: select
+    proxies:
+      - DIRECT
+      - "🚀 自动选择"
+
+rules:
+  # ---------- 本机 / 局域网 ----------
+  - DOMAIN,localhost,DIRECT
+  - DOMAIN-SUFFIX,local,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+
+  # ---------- IP / DNS 泄漏检测站：必须先于 geosite:cn ----------
+  - DOMAIN-SUFFIX,browserleaks.com,🚀 自动选择
+  - DOMAIN-SUFFIX,dnsleaktest.com,🚀 自动选择
+  - DOMAIN-SUFFIX,ipleak.net,🚀 自动选择
+  - DOMAIN-SUFFIX,ipinfo.io,🚀 自动选择
+  - DOMAIN-SUFFIX,ip.sb,🚀 自动选择
+  - DOMAIN-SUFFIX,whatismyipaddress.com,🚀 自动选择
+  - DOMAIN-SUFFIX,ifconfig.me,🚀 自动选择
+
+  # ---------- AI ----------
+  - DOMAIN-SUFFIX,chatgpt.com,🤖 AI
+  - DOMAIN-SUFFIX,openai.com,🤖 AI
+  - DOMAIN-SUFFIX,oaistatic.com,🤖 AI
+  - DOMAIN-SUFFIX,oaiusercontent.com,🤖 AI
+  - DOMAIN-SUFFIX,anthropic.com,🤖 AI
+  - DOMAIN-SUFFIX,claude.ai,🤖 AI
+  - DOMAIN-SUFFIX,claudeusercontent.com,🤖 AI
+  - DOMAIN-SUFFIX,perplexity.ai,🤖 AI
+  - DOMAIN-SUFFIX,grok.com,🤖 AI
+  - DOMAIN-SUFFIX,x.ai,🤖 AI
+  - DOMAIN,gemini.google.com,🤖 AI
+  - DOMAIN-SUFFIX,ai.google.dev,🤖 AI
+  - DOMAIN,m365.cloud.microsoft,🤖 AI
+  - GEOSITE,category-ai-!cn,🤖 AI
+
+  # ---------- 影视 / 流媒体 ----------
+  - GEOSITE,youtube,🎬 影视
+  - GEOSITE,netflix,🎬 影视
+  - GEOSITE,disney,🎬 影视
+  - GEOSITE,hbo,🎬 影视
+  - GEOSITE,biliintl,🎬 影视
+  - GEOSITE,bahamut,🎬 影视
+  - DOMAIN-SUFFIX,primevideo.com,🎬 影视
+  - DOMAIN-SUFFIX,amazonvideo.com,🎬 影视
+  - DOMAIN-SUFFIX,aiv-cdn.net,🎬 影视
+  - DOMAIN-SUFFIX,aiv-delivery.net,🎬 影视
+
+  # ---------- 中国大陆 / 国际公司的中国大陆服务 ----------
+  # 只放“中国大陆子集”直连，不把整个 Apple/Microsoft 一刀切 DIRECT。
+  - GEOSITE,private,🇨🇳 国内
+  - GEOSITE,bilibili,🇨🇳 国内
+  - GEOSITE,apple,🇨🇳 国内
+  - GEOSITE,microsoft,🇨🇳 国内
+  - GEOSITE,onedrive,🇨🇳 国内
+  - GEOSITE,steam@cn,🇨🇳 国内
+  - GEOSITE,category-games@cn,🇨🇳 国内
+  - GEOSITE,cn,🇨🇳 国内
+  - GEOIP,CN,🇨🇳 国内,no-resolve
+  - GEOSITE,geolocation-!cn,🐟 兜底
+  - MATCH,🐟 兜底

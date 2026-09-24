@@ -1,0 +1,13 @@
+{
+  "version": "v1.19.29",
+  "source": "https://github.com/MetaCubeX/mihomo/releases/tag/v1.19.29",
+  "artifacts": {
+    "darwin-arm64": {
+      "file": "mihomo-darwin-arm64-v1.19.29.gz",
+      "url": "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.29/mihomo-darwin-arm64-v1.19.29.gz",
+      "compressedSha256": "4dc25df9e899f14161911302a8ee5fc9e202ed9c976fc405bf82c50ff27466ca"
+    }
+  },
+  "runtimeBundleStatus": "not-bundled",
+  "note": "Only the reproducible darwin-arm64 fixture gate is pinned; application runtime bundling and other targets remain pending."
+}

@@ -1,0 +1,159 @@
+---
+mixed-port: 7890
+allow-lan: false
+bind-address: 127.0.0.1
+mode: rule
+log-level: warning
+ipv6: false
+find-process-mode: strict
+unified-delay: true
+tcp-concurrent: true
+dns:
+  enable: true
+  listen: "127.0.0.1:1053"
+  ipv6: false
+  cache-algorithm: arc
+  prefer-h3: false
+  use-hosts: true
+  use-system-hosts: false
+  respect-rules: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - "*.lan"
+    - localhost
+    - +.local
+  nameserver:
+    - "https://1.1.1.1/dns-query#节点选择"
+    - "https://8.8.8.8/dns-query#节点选择"
+  proxy-server-nameserver:
+    - "https://1.1.1.1/dns-query#节点选择"
+    - "https://8.8.8.8/dns-query#节点选择"
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - "any:53"
+    - "tcp://any:53"
+  strict-route: true
+  endpoint-independent-nat: false
+proxies:
+  - type: ss
+    server: 192.0.2.10
+    port: 443
+    cipher: aes-128-gcm
+    password: PLACEHOLDER_PASSWORD
+    name: Fixture Node
+proxy-groups:
+  - name: 节点选择
+    type: select
+    proxies:
+      - 自动选择
+      - 故障转移
+      - Fixture Node
+  - name: 自动选择
+    type: url-test
+    proxies:
+      - Fixture Node
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    lazy: true
+  - name: 故障转移
+    type: fallback
+    proxies:
+      - Fixture Node
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    lazy: true
+  - name: AI / Claude
+    type: select
+    proxies:
+      - 节点选择
+      - 自动选择
+      - 故障转移
+  - name: 流媒体
+    type: select
+    proxies:
+      - 节点选择
+      - 自动选择
+      - 故障转移
+  - name: 广告拦截
+    type: select
+    proxies:
+      - REJECT
+      - 节点选择
+  - name: 其他兜底
+    type: select
+    proxies:
+      - 节点选择
+      - 自动选择
+      - 故障转移
+rule-providers:
+  acl4ssr.local-area-network:
+    type: http
+    url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list"
+    path: "./rulesets/acl4ssr-local-area-network.txt"
+    interval: 86400
+    proxy: 节点选择
+    behavior: classical
+    format: text
+    size-limit: 10485760
+  acl4ssr.ban-ad:
+    type: http
+    url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list"
+    path: "./rulesets/acl4ssr-ban-ad.txt"
+    interval: 86400
+    proxy: 节点选择
+    behavior: classical
+    format: text
+    size-limit: 10485760
+  acl4ssr.download:
+    type: http
+    url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Download.list"
+    path: "./rulesets/acl4ssr-download.txt"
+    interval: 86400
+    proxy: 节点选择
+    behavior: classical
+    format: text
+    size-limit: 10485760
+  acl4ssr.proxy-lite:
+    type: http
+    url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyLite.list"
+    path: "./rulesets/acl4ssr-proxy-lite.txt"
+    interval: 86400
+    proxy: 节点选择
+    behavior: classical
+    format: text
+    size-limit: 10485760
+  acl4ssr.china-domain:
+    type: http
+    url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list"
+    path: "./rulesets/acl4ssr-china-domain.txt"
+    interval: 86400
+    proxy: 节点选择
+    behavior: classical
+    format: text
+    size-limit: 10485760
+  acl4ssr.china-company-ip:
+    type: http
+    url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list"
+    path: "./rulesets/acl4ssr-china-company-ip.txt"
+    interval: 86400
+    proxy: 节点选择
+    behavior: classical
+    format: text
+    size-limit: 10485760
+rules:
+  - "RULE-SET,acl4ssr.local-area-network,节点选择"
+  - "RULE-SET,acl4ssr.ban-ad,REJECT"
+  - "DOMAIN-SUFFIX,claude.ai,AI / Claude"
+  - "DOMAIN-SUFFIX,anthropic.com,AI / Claude"
+  - "DOMAIN-SUFFIX,claude.com,AI / Claude"
+  - "DOMAIN-SUFFIX,anthropicusercontent.com,AI / Claude"
+  - "RULE-SET,acl4ssr.download,节点选择"
+  - "RULE-SET,acl4ssr.proxy-lite,节点选择"
+  - "RULE-SET,acl4ssr.china-domain,节点选择"
+  - "RULE-SET,acl4ssr.china-company-ip,节点选择"
+  - "MATCH,其他兜底"
