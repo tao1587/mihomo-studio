@@ -2,7 +2,7 @@
 
 ## 状态
 
-`accepted`
+`archived`
 
 ## 现状证据与问题
 
@@ -20,7 +20,7 @@
 
 - 主能力：`spec-governance`。
 - 安全边界：`security-privacy`。
-- 新增 `.github/workflows/ci.yml`、`.github/workflows/release.yml` 与 `scripts/check-github-workflows.mjs`。
+- 新增 `.github/workflows/ci.yml`、`.github/workflows/release.yml`、`scripts/check-github-workflows.mjs` 与 GPLv3 `LICENSE`。
 - 更新 `package.json`、当前能力 Spec 与 `openspec/spec-index.json` 的 Implementation Map。
 
 ## 安全、隐私、兼容与回滚

@@ -31,6 +31,10 @@ const ciPath = ".github/workflows/ci.yml";
 const releasePath = ".github/workflows/release.yml";
 const ci = await readWorkflow(ciPath);
 const release = await readWorkflow(releasePath);
+const node24ActionShas = [
+  "fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09", // actions/checkout v5
+  "a0853c24544627f65ddf259abe73b1d18a591444", // actions/setup-node v5
+];
 
 requireMatch(ci, /pull_request:/, "CI must run for pull requests");
 requireMatch(ci, /push:/, "CI must run for pushes");
@@ -48,6 +52,11 @@ for (const command of [
   }
 }
 requirePinnedActions(ci, ciPath);
+for (const sha of node24ActionShas) {
+  if (!ci.includes(sha)) {
+    throw new Error(`CI must use the Node 24 action pinned at ${sha}`);
+  }
+}
 
 requireMatch(release, /tags:\s*\n\s+- ['"]v\*['"]/, "Release must only run for v* tags");
 requireMatch(
@@ -65,5 +74,10 @@ requireMatch(release, /tagName:\s*\$\{\{ github\.ref_name \}\}/, "Release must u
 requireMatch(release, /releaseDraft:\s*false/, "Release must publish a non-draft release");
 requireMatch(release, /generateReleaseNotes:\s*true/, "Release must generate release notes");
 requirePinnedActions(release, releasePath);
+for (const sha of node24ActionShas) {
+  if (!release.includes(sha)) {
+    throw new Error(`Release must use the Node 24 action pinned at ${sha}`);
+  }
+}
 
 console.log("GitHub workflow checks passed: CI and three-platform tagged releases are configured.");
