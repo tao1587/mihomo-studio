@@ -145,6 +145,17 @@ Mihomo sidecar SHALL：
 - **AND** secret 字段使用明显占位值
 - **AND** 测试断言输出摘要不回显这些值
 
+### Requirement: 公共 CI 与发布边界
+
+公共 GitHub Actions SHALL 使用最小令牌权限并固定第三方 Action 的完整 commit SHA。CI 和 Release 不得把订阅 URL、UUID、密码、token、生成 YAML 或其他 secret-bearing 文件作为日志或构建产物上传。
+
+#### Scenario: 普通 CI 运行
+
+- **GIVEN** 仓库包含 secret-bearing 运行时功能
+- **WHEN** push 或 pull request 触发 CI
+- **THEN** 工作流只使用仓库内的占位测试数据
+- **AND** `GITHUB_TOKEN` 只有 `contents: read`。
+
 ## Implementation Map
 
 | 路径 | 当前责任 |
@@ -167,6 +178,9 @@ Mihomo sidecar SHALL：
 | `src/shared/contracts.ts` | 前端严格隐私 DTO |
 | `src/features/profile-preview/ui/PreviewPanel.tsx` | 隐私约束与证据边界文案 |
 | `src-tauri/tauri.conf.json` | WebView CSP |
+| `.github/workflows/ci.yml` | 公共 CI 的只读权限和本地门禁 |
+| `.github/workflows/release.yml` | 标签发布的最小写权限与非秘密安装包产物 |
+| `scripts/check-github-workflows.mjs` | 工作流权限和固定 Action 引用检查 |
 
 凭据库、缓存、绑定 sidecar 和导出路径尚未存在；实现时必须先更新本 Spec 和 Implementation Map。
 

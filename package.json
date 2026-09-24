@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:mihomo-fixture": "bash scripts/validate-mihomo-fixture.sh",
     "check:architecture": "node scripts/check-architecture.mjs",
-    "check:spec": "node scripts/check-spec-drift.mjs && npm run check:architecture"
+    "check:workflows": "node scripts/check-github-workflows.mjs",
+    "check:spec": "node scripts/check-spec-drift.mjs && npm run check:architecture && npm run check:workflows"
   },
   "dependencies": {
     "react": "^19.1.0",

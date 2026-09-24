@@ -225,7 +225,10 @@
         "src/shared/api/studio.ts",
         "src/shared/contracts.ts",
         "src/features/profile-preview/ui/PreviewPanel.tsx",
-        "src/app/useStudioWorkspace.ts"
+        "src/app/useStudioWorkspace.ts",
+        "scripts/check-github-workflows.mjs",
+        ".github/workflows/ci.yml",
+        ".github/workflows/release.yml"
       ],
       "ipcCommands": [
         "convert_node_text",
@@ -241,7 +244,10 @@
         "openspec/project.md",
         "openspec/spec-index.json",
         "scripts/check-spec-drift.mjs",
-        "scripts/check-architecture.mjs"
+        "scripts/check-architecture.mjs",
+        "scripts/check-github-workflows.mjs",
+        ".github/workflows/ci.yml",
+        ".github/workflows/release.yml"
       ],
       "ipcCommands": []
     }
